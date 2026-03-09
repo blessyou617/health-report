@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { RouteProp, useRoute } from '@react-navigation/native';
+
+type QuestionnaireRouteParams = {
+  Questionnaire: {
+    reportId?: number;
+    token?: string;
+  };
+};
 
 const questions = [
   {
@@ -30,6 +38,9 @@ const questions = [
 ];
 
 export default function QuestionnaireScreen({ navigation }: any) {
+  const route = useRoute<RouteProp<QuestionnaireRouteParams, 'Questionnaire'>>();
+  const reportId = route.params?.reportId;
+  const token = route.params?.token;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
 
@@ -47,7 +58,14 @@ export default function QuestionnaireScreen({ navigation }: any) {
         [
           {
             text: '查看报告',
-            onPress: () => navigation.navigate('Report', { reportId: 1 }),
+            onPress: () => {
+              if (!reportId) {
+                Alert.alert('无法查看报告', '缺少报告上下文，请先上传并创建报告。');
+                return;
+              }
+
+              navigation.navigate('Report', { reportId, token });
+            },
           },
         ]
       );

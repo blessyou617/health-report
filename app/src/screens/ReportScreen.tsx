@@ -6,6 +6,7 @@ import { Audio, AVPlaybackStatus } from 'expo-av';
 import { generateTextReport } from '../services/reportShare';
 import { getReport, ReportResponse } from '../api/reports';
 import { generateReportTTS } from '../api/tts';
+import { toAbsoluteApiUrl } from '../api/client';
 
 type ReportRouteParams = {
   Report: {
@@ -125,9 +126,10 @@ export default function ReportScreen() {
         return null;
       }
 
-      setAudioUrl(tts.audio_url);
+      const absoluteAudioUrl = toAbsoluteApiUrl(tts.audio_url);
+      setAudioUrl(absoluteAudioUrl);
       setAudioState('idle');
-      return tts.audio_url;
+      return absoluteAudioUrl;
     } catch (e) {
       setAudioState('error');
       setAudioError(e instanceof Error ? e.message : '语音生成失败');
