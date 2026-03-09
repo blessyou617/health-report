@@ -1,0 +1,31 @@
+<!--components/normal-list/normal-list.wxml-->
+<view class="normal-card">
+  <view class="card-header">
+    <view class="header-left">
+      <view class="icon-wrapper success">
+        <image class="icon" src="/images/icons/check-circle.png" mode="aspectFit"></image>
+      </view>
+      <text class="card-title">正常指标</text>
+    </view>
+    <view class="badge success">
+      <text class="badge-text">{{items.length}} 项</text>
+    </view>
+  </view>
+  
+  <view class="card-body">
+    <view 
+      class="normal-item" 
+      wx:for="{{items}}" 
+      wx:key="index"
+    >
+      <view class="item-check">
+        <image class="check-icon" src="/images/icons/check.png" mode="aspectFit"></image>
+      </view>
+      <text class="item-text">{{item}}</text>
+    </view>
+    
+    <view class="empty-state" wx:if="{{items.length === 0}}">
+      <text class="empty-text">暂无正常指标记录</text>
+    </view>
+  </view>
+</view>

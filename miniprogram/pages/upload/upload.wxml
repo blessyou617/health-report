@@ -1,0 +1,42 @@
+<!--upload.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">上传体检报告</text>
+    <text class="subtitle">支持 PDF、JPG、PNG 格式</text>
+  </view>
+
+  <view class="upload-area" bindtap="chooseFile">
+    <view wx:if="{{!filePath}}" class="upload-placeholder">
+      <image class="upload-icon" src="/images/upload-add.png"></image>
+      <text class="upload-text">点击上传文件</text>
+      <text class="upload-hint">支持 PDF、JPG、PNG</text>
+    </view>
+    <view wx:else class="file-preview">
+      <image class="file-icon" src="/images/file.png"></image>
+      <view class="file-info">
+        <text class="file-name">{{fileName}}</text>
+        <text class="file-size">{{fileSize}}</text>
+      </view>
+      <view class="remove-btn" bindtap="removeFile" catchtap="true">
+        <text>x</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tips">
+    <text class="tips-title">温馨提示：</text>
+    <text class="tips-item">• 请上传清晰的体检报告照片或 PDF</text>
+    <text class="tips-item">• 文件大小不超过 10MB</text>
+    <text class="tips-item">• 建议上传完整报告包含血液检查项</text>
+  </view>
+
+  <view class="action-area">
+    <button 
+      class="next-btn" 
+      bindtap="goToQuestionnaire"
+      disabled="{{!filePath}}"
+    >
+      下一步：填写问卷
+    </button>
+  </view>
+</view>

@@ -1,0 +1,22 @@
+<!--components/health-summary/health-summary.wxml-->
+<view class="summary-card">
+  <view class="card-header">
+    <view class="header-left">
+      <view class="icon-wrapper">
+        <image class="icon" src="/images/icons/summary.png" mode="aspectFit"></image>
+      </view>
+      <text class="card-title">健康总结</text>
+    </view>
+  </view>
+  
+  <view class="card-body">
+    <text class="summary-text">{{summary}}</text>
+  </view>
+  
+  <view class="card-footer" bindtap="onVoicePlay" wx:if="{{showVoiceButton}}">
+    <view class="voice-button {{isPlaying ? 'playing' : ''}}">
+      <image class="voice-icon" src="{{isPlaying ? '/images/icons/stop.png' : '/images/icons/play.png'}}" mode="aspectFit"></image>
+      <text class="voice-text">{{isPlaying ? '停止播放' : '语音播放'}}</text>
+    </view>
+  </view>
+</view>

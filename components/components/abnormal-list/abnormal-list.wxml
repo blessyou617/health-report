@@ -1,0 +1,41 @@
+<!--components/abnormal-list/abnormal-list.wxml-->
+<view class="abnormal-card">
+  <view class="card-header">
+    <view class="header-left">
+      <view class="icon-wrapper warning">
+        <image class="icon" src="/images/icons/warning.png" mode="aspectFit"></image>
+      </view>
+      <text class="card-title">异常指标</text>
+    </view>
+    <view class="badge">
+      <text class="badge-text">{{items.length}} 项</text>
+    </view>
+  </view>
+  
+  <view class="card-body">
+    <view 
+      class="abnormal-item" 
+      wx:for="{{items}}" 
+      wx:key="index"
+      bindtap="onItemTap"
+      data-index="{{index}}"
+    >
+      <view class="item-indicator"></view>
+      <view class="item-content">
+        <text class="item-text">{{item}}</text>
+      </view>
+      <view class="item-arrow">
+        <text>></text>
+      </view>
+    </view>
+    
+    <view class="empty-state" wx:if="{{items.length === 0}}">
+      <image class="empty-icon" src="/images/icons/check-circle.png" mode="aspectFit"></image>
+      <text class="empty-text">暂无异常指标</text>
+    </view>
+  </view>
+  
+  <view class="card-footer">
+    <text class="footer-tip">💡 点击指标可了解更多详情</text>
+  </view>
+</view>

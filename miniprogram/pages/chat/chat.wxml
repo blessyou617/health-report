@@ -1,0 +1,63 @@
+<!--chat.wxml-->
+<view class="container">
+  <!-- Header -->
+  <view class="header">
+    <text class="title">追问 AI 助手</text>
+    <text class="remaining">剩余 {{remaining}} 次追问机会</text>
+  </view>
+
+  <!-- Chat Messages -->
+  <scroll-view 
+    class="chat-area" 
+    scroll-y 
+    scroll-into-view="{{scrollIntoView}}"
+  >
+    <view class="messages">
+      <!-- AI Welcome Message -->
+      <view class="message ai">
+        <image class="avatar" src="/images/ai-avatar.png"></image>
+        <view class="bubble">
+          <text>您好！我是您的健康顾问。您可以针对体检报告向我追问任何问题，比如：</text>
+          <text class="suggestion">• 这个指标偏高怎么办？</text>
+          <text class="suggestion">• 平时饮食要注意什么？</text>
+          <text class="suggestion">• 需要做进一步检查吗？</text>
+        </view>
+      </view>
+
+      <!-- Chat History -->
+      <view 
+        class="message {{item.role}}" 
+        wx:for="{{messages}}" 
+        wx:key="id"
+      >
+        <image class="avatar" wx:if="{{item.role === 'ai'}}" src="/images/ai-avatar.png"></image>
+        <view class="bubble">
+          <text>{{item.content}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <view id="bottom"></view>
+  </scroll-view>
+
+  <!-- Input Area -->
+  <view class="input-area" wx:if="{{remaining > 0}}">
+    <input 
+      class="input" 
+      placeholder="请输入您的问题..." 
+      value="{{inputText}}"
+      bindinput="onInput"
+      bindconfirm="sendMessage"
+      confirm-type="send"
+    ></input>
+    <button class="send-btn" bindtap="sendMessage" disabled="{{!inputText || sending}}">
+      <image class="send-icon" src="/images/send.png"></image>
+    </button>
+  </view>
+
+  <!-- No Questions Left -->
+  <view class="no-questions" wx:else>
+    <text>您已完成 2 次追问</text>
+    <button class="back-btn" bindtap="goBack">返回报告</button>
+  </view>
+</view>

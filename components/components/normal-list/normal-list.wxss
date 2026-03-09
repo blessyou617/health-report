@@ -1,0 +1,107 @@
+/* components/normal-list/normal-list.wxss */
+
+.normal-card {
+  background: #fff;
+  border-radius: 24rpx;
+  margin: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.icon-wrapper {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+}
+
+.icon-wrapper.success {
+  background: #f6ffed;
+}
+
+.icon {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.card-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.badge {
+  padding: 12rpx 24rpx;
+  border-radius: 30rpx;
+}
+
+.badge.success {
+  background: #f6ffed;
+}
+
+.badge-text {
+  font-size: 28rpx;
+  color: #52c41a;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 24rpx;
+}
+
+.normal-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 16rpx;
+  margin-bottom: 12rpx;
+  background: #fafafa;
+  border-radius: 12rpx;
+}
+
+.normal-item:last-child {
+  margin-bottom: 0;
+}
+
+.item-check {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.check-icon {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.item-text {
+  font-size: 32rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40rpx;
+}
+
+.empty-text {
+  font-size: 30rpx;
+  color: #999;
+}

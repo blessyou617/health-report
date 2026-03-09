@@ -1,0 +1,90 @@
+<!--questionnaire.wxml-->
+<view class="container">
+  <view class="header">
+    <text class="title">生活习惯问卷</text>
+    <text class="subtitle">帮助AI更准确地分析您的报告</text>
+  </view>
+
+  <form bindsubmit="submitQuestionnaire">
+    <view class="form-group">
+      <text class="label">是否吸烟？</text>
+      <radio-group name="smoking" class="radio-group">
+        <label class="radio-item">
+          <radio value="no" checked="{{formData.smoking === 'no'}}" color="#4A90E2"/>
+          <text>不吸烟</text>
+        </label>
+        <label class="radio-item">
+          <radio value="occasionally" checked="{{formData.smoking === 'occasionally'}}" color="#4A90E2"/>
+          <text>偶尔</text>
+        </label>
+        <label class="radio-item">
+          <radio value="yes" checked="{{formData.smoking === 'yes'}}" color="#4A90E2"/>
+          <text>经常</text>
+        </label>
+      </radio-group>
+    </view>
+
+    <view class="form-group">
+      <text class="label">是否饮酒？</text>
+      <radio-group name="alcohol" class="radio-group">
+        <label class="radio-item">
+          <radio value="no" checked="{{formData.alcohol === 'no'}}" color="#4A90E2"/>
+          <text>不饮酒</text>
+        </label>
+        <label class="radio-item">
+          <radio value="occasionally" checked="{{formData.alcohol === 'occasionally'}}" color="#4A90E2"/>
+          <text>偶尔</text>
+        </label>
+        <label class="radio-item">
+          <radio value="yes" checked="{{formData.alcohol === 'yes'}}" color="#4A90E2"/>
+          <text>经常</text>
+        </label>
+      </radio-group>
+    </view>
+
+    <view class="form-group">
+      <text class="label">睡眠时间？</text>
+      <picker mode="time" value="{{formData.sleepTime}}" bindchange="bindSleepChange">
+        <view class="picker">
+          <text wx:if="{{formData.sleepTime}}">{{formData.sleepTime}}</text>
+          <text wx:else class="placeholder">选择入睡时间</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-group">
+      <text class="label">运动频率？</text>
+      <radio-group name="exercise" class="radio-group">
+        <label class="radio-item">
+          <radio value="never" checked="{{formData.exercise === 'never'}}" color="#4A90E2"/>
+          <text>从不运动</text>
+        </label>
+        <label class="radio-item">
+          <radio value="occasionally" checked="{{formData.exercise === 'occasionally'}}" color="#4A90E2"/>
+          <text>偶尔</text>
+        </label>
+        <label class="radio-item">
+          <radio value="regularly" checked="{{formData.exercise === 'regularly'}}" color="#4A90E2"/>
+          <text>经常</text>
+        </label>
+      </radio-group>
+    </view>
+
+    <view class="form-group">
+      <text class="label">病史（选填）</text>
+      <textarea 
+        name="medicalHistory" 
+        value="{{formData.medicalHistory}}"
+        placeholder="如有慢性病史请填写，如高血压、糖尿病等" 
+        class="textarea"
+        maxlength="200"
+      ></textarea>
+    </view>
+
+    <view class="action-area">
+      <button form-type="submit" class="submit-btn">
+        提交并分析报告
+      </button>
+    </view>
+  </form>
+</view>

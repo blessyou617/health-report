@@ -1,0 +1,33 @@
+<!--pages/demo/demo.wxml-->
+<view class="container">
+  <!-- Header -->
+  <view class="header">
+    <text class="title">体检报告</text>
+    <text class="date">2026年3月6日</text>
+  </view>
+
+  <!-- Health Summary -->
+  <health-summary 
+    summary="{{report.summary}}"
+    bind:voiceplay="onVoicePlay"
+  />
+
+  <!-- Abnormal Items -->
+  <abnormal-list 
+    items="{{report.abnormal_items}}"
+    bind:itemtap="onAbnormalItemTap"
+  />
+
+  <!-- Normal Items -->
+  <normal-list 
+    items="{{report.normal_items}}"
+  />
+
+  <!-- Lifestyle Advice -->
+  <lifestyle-advice 
+    advice="{{report.lifestyle_advice}}"
+    bind:voiceplay="onVoicePlay"
+    bind:share="onShare"
+    bind:askquestion="onAskQuestion"
+  />
+</view>

@@ -1,0 +1,132 @@
+/* components/abnormal-list/abnormal-list.wxss */
+
+.abnormal-card {
+  background: #fff;
+  border-radius: 24rpx;
+  margin: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.icon-wrapper {
+  width: 56rpx;
+  height: 56rpx;
+  background: #fff5f5;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+}
+
+.icon-wrapper.warning {
+  background: #fff5f5;
+}
+
+.icon {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.card-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.badge {
+  background: #fff5f5;
+  padding: 12rpx 24rpx;
+  border-radius: 30rpx;
+}
+
+.badge-text {
+  font-size: 28rpx;
+  color: #ff4d4f;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 16rpx 0;
+}
+
+.abnormal-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 32rpx;
+  margin: 8rpx 24rpx;
+  background: #fff9f9;
+  border-radius: 16rpx;
+  transition: all 0.2s ease;
+}
+
+.abnormal-item:active {
+  background: #fff0f0;
+  transform: scale(0.98);
+}
+
+.item-indicator {
+  width: 16rpx;
+  height: 16rpx;
+  background: #ff4d4f;
+  border-radius: 50%;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.item-content {
+  flex: 1;
+}
+
+.item-text {
+  font-size: 32rpx;
+  color: #333;
+  line-height: 1.6;
+}
+
+.item-arrow {
+  color: #ccc;
+  font-size: 32rpx;
+  margin-left: 16rpx;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx;
+}
+
+.empty-icon {
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #999;
+}
+
+.card-footer {
+  padding: 24rpx 32rpx;
+  border-top: 2rpx solid #f0f0f0;
+}
+
+.footer-tip {
+  font-size: 26rpx;
+  color: #999;
+}

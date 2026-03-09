@@ -1,0 +1,44 @@
+<!--components/lifestyle-advice/lifestyle-advice.wxml-->
+<view class="advice-card">
+  <view class="card-header">
+    <view class="header-left">
+      <view class="icon-wrapper advice">
+        <image class="icon" src="/images/icons/lightbulb.png" mode="aspectFit"></image>
+      </view>
+      <text class="card-title">生活建议</text>
+    </view>
+  </view>
+  
+  <view class="card-body">
+    <view class="advice-content">
+      <text class="advice-text">{{advice}}</text>
+    </view>
+  </view>
+  
+  <view class="card-actions" wx:if="{{showVoiceButton || showShareButton}}">
+    <view 
+      class="action-button voice" 
+      bindtap="onVoicePlay"
+      wx:if="{{showVoiceButton}}"
+    >
+      <image class="action-icon" src="{{isPlaying ? '/images/icons/stop.png' : '/images/icons/volume.png'}}" mode="aspectFit"></image>
+      <text class="action-text">{{isPlaying ? '停止播放' : '语音播报'}}</text>
+    </view>
+    
+    <view 
+      class="action-button share" 
+      bindtap="onShare"
+      wx:if="{{showShareButton}}"
+    >
+      <image class="action-icon" src="/images/icons/share.png" mode="aspectFit"></image>
+      <text class="action-text">分享给家人</text>
+    </view>
+  </view>
+  
+  <view class="card-footer" wx:if="{{showQuestionButton}}">
+    <view class="question-button" bindtap="onAskQuestion">
+      <image class="question-icon" src="/images/icons/chat.png" mode="aspectFit"></image>
+      <text class="question-text">还有疑问？追问 AI</text>
+    </view>
+  </view>
+</view>

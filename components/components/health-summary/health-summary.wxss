@@ -1,0 +1,83 @@
+/* components/health-summary/health-summary.wxss */
+
+.summary-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 24rpx;
+  padding: 40rpx;
+  margin: 24rpx;
+  box-shadow: 0 8rpx 30rpx rgba(102, 126, 234, 0.3);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.icon-wrapper {
+  width: 56rpx;
+  height: 56rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+}
+
+.icon {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.card-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.card-body {
+  margin-bottom: 30rpx;
+}
+
+.summary-text {
+  font-size: 34rpx;
+  line-height: 56rpx;
+  color: #fff;
+  font-weight: 500;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: center;
+}
+
+.voice-button {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50rpx;
+  padding: 20rpx 40rpx;
+}
+
+.voice-button.playing {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.voice-icon {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 16rpx;
+}
+
+.voice-text {
+  font-size: 30rpx;
+  color: #fff;
+  font-weight: 600;
+}

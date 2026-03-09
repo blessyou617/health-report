@@ -1,0 +1,87 @@
+<!--report.wxml-->
+<view class="container">
+  <!-- Header -->
+  <view class="header">
+    <text class="title">体检报告分析</text>
+    <text class="date">{{report.date}}</text>
+  </view>
+
+  <!-- Summary Card -->
+  <view class="card summary-card">
+    <view class="card-header">
+      <image class="card-icon" src="/images/summary.png"></image>
+      <text class="card-title">健康总结</text>
+    </view>
+    <view class="card-content">
+      <text class="summary-text">{{report.summary}}</text>
+    </view>
+    <!-- Voice Play Button -->
+    <button class="voice-btn" bindtap="playSummaryVoice" wx:if="{{!isPlayingSummary}}">
+      <image class="voice-icon" src="/images/play.png"></image>
+      <text>语音播放</text>
+    </button>
+    <button class="voice-btn playing" bindtap="stopSummaryVoice" wx:else>
+      <image class="voice-icon" src="/images/stop.png"></image>
+      <text>停止播放</text>
+    </button>
+  </view>
+
+  <!-- Abnormal Items -->
+  <view class="card" wx:if="{{report.abnormal_items && report.abnormal_items.length > 0}}">
+    <view class="card-header">
+      <image class="card-icon warning" src="/images/warning.png"></image>
+      <text class="card-title">异常指标</text>
+    </view>
+    <view class="card-content">
+      <view class="item-list">
+        <view class="item abnormal" wx:for="{{report.abnormal_items}}" wx:key="index">
+          <text class="item-dot"></text>
+          <text class="item-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Normal Items -->
+  <view class="card" wx:if="{{report.normal_items && report.normal_items.length > 0}}">
+    <view class="card-header">
+      <image class="card-icon success" src="/images/check.png"></image>
+      <text class="card-title">正常指标</text>
+    </view>
+    <view class="card-content">
+      <view class="item-list">
+        <view class="item normal" wx:for="{{report.normal_items}}" wx:key="index">
+          <text class="item-dot"></text>
+          <text class="item-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Lifestyle Advice -->
+  <view class="card advice-card">
+    <view class="card-header">
+      <image class="card-icon" src="/images/advice.png"></image>
+      <text class="card-title">生活建议</text>
+    </view>
+    <view class="card-content">
+      <text class="advice-text">{{report.lifestyle_advice}}</text>
+    </view>
+    <button class="voice-btn" bindtap="playAdviceVoice" wx:if="{{!isPlayingAdvice}}">
+      <image class="voice-icon" src="/images/play.png"></image>
+      <text>语音播放</text>
+    </button>
+    <button class="voice-btn playing" bindtap="stopAdviceVoice" wx:else>
+      <image class="voice-icon" src="/images/stop.png"></image>
+      <text>停止播放</text>
+    </button>
+  </view>
+
+  <!-- Q&A Button -->
+  <view class="action-area">
+    <button class="qa-btn" bindtap="goToChat">
+      <image class="qa-icon" src="/images/chat-white.png"></image>
+      <text>追问 ({{remainingQuestions}}次机会)</text>
+    </button>
+  </view>
+</view>

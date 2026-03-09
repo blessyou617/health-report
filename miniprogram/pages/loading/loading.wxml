@@ -1,0 +1,26 @@
+<!--loading.wxml-->
+<view class="container">
+  <view class="animation-area">
+    <view class="scanner">
+      <view class="scan-line"></view>
+    </view>
+    <image class="ai-icon" src="/images/ai-brain.png"></image>
+  </view>
+  
+  <view class="content">
+    <text class="title">AI 正在分析报告</text>
+    <text class="subtitle">请稍候，约需 10-30 秒</text>
+  </view>
+  
+  <view class="progress">
+    <view class="progress-bar">
+      <view class="progress-inner" style="width: {{progress}}%"></view>
+    </view>
+    <text class="progress-text">{{progressText}}</text>
+  </view>
+  
+  <view class="tips">
+    <text class="tips-title">AI 正在分析：</text>
+    <text class="tips-item">{{currentStep}}</text>
+  </view>
+</view>
