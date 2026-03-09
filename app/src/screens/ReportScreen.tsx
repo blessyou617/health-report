@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Share, ActivityIndicator } from 'react-native';
 import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/native';
-import { Audio, AVPlaybackStatus } from 'expo-av';
 
 import { generateTextReport } from '../services/reportShare';
 import { getReport, ReportResponse } from '../api/reports';
@@ -22,6 +21,30 @@ type ReportAnalysisView = {
 };
 
 type AudioState = 'idle' | 'loading' | 'playing' | 'paused' | 'completed' | 'error' | 'unavailable';
+
+type PlaybackStatus = {
+  isLoaded: boolean;
+  error?: string;
+  didJustFinish?: boolean;
+  isPlaying?: boolean;
+};
+
+type AudioSoundInstance = {
+  unloadAsync: () => Promise<unknown>;
+  setOnPlaybackStatusUpdate: (callback: ((status: PlaybackStatus) => void) | null) => void;
+  playAsync: () => Promise<unknown>;
+  pauseAsync: () => Promise<unknown>;
+};
+
+type AudioModule = {
+  Sound: {
+    createAsync: (
+      source: { uri: string },
+      initialStatus: { shouldPlay: boolean },
+      onPlaybackStatusUpdate: (status: PlaybackStatus) => void
+    ) => Promise<{ sound: AudioSoundInstance }>;
+  };
+};
 
 function parseAnalysis(report: ReportResponse): ReportAnalysisView {
   const fallbackSummary = '报告已上传，等待分析结果。';
@@ -65,7 +88,18 @@ export default function ReportScreen() {
   const [audioState, setAudioState] = useState<AudioState>('idle');
   const [audioError, setAudioError] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const soundRef = useRef<AudioSoundInstance | null>(null);
+
+  const getAudioModule = useCallback(async (): Promise<AudioModule | null> => {
+    try {
+      const module = await import('expo-av');
+      return module.Audio as unknown as AudioModule;
+    } catch {
+      setAudioState('unavailable');
+      setAudioError('当前环境不支持语音播放，请使用最新 Expo Go 或重新构建客户端。');
+      return null;
+    }
+  }, []);
 
   const unloadAudio = useCallback(async () => {
     if (soundRef.current) {
@@ -86,7 +120,7 @@ export default function ReportScreen() {
     };
   }, [unloadAudio]);
 
-  const onPlaybackStatusUpdate = useCallback((status: AVPlaybackStatus) => {
+  const onPlaybackStatusUpdate = useCallback((status: PlaybackStatus) => {
     if (!status.isLoaded) {
       if (status.error) {
         setAudioState('error');
@@ -139,6 +173,9 @@ export default function ReportScreen() {
     const targetUrl = await ensureAudioUrl();
     if (!targetUrl) return;
 
+    const Audio = await getAudioModule();
+    if (!Audio) return;
+
     setAudioError(null);
 
     try {
@@ -157,7 +194,7 @@ export default function ReportScreen() {
       setAudioState('error');
       setAudioError('音频加载失败，请稍后重试。');
     }
-  }, [ensureAudioUrl, onPlaybackStatusUpdate]);
+  }, [ensureAudioUrl, getAudioModule, onPlaybackStatusUpdate]);
 
   const handlePauseAudio = useCallback(async () => {
     if (!soundRef.current) return;
