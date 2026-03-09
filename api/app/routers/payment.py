@@ -8,7 +8,7 @@ from sqlalchemy import select
 from typing import Optional
 
 from app.core.database import get_db
-from app.models import User, Report
+from app.models import User, Report, Payment
 from app.core.security import verify_token
 from app.models.schemas import (
     CreatePaymentRequest, CreatePaymentResponse,
@@ -84,7 +84,7 @@ async def create_payment(
         )
     
     # 检查是否已支付
-    if report.is_paid:
+    if report.is_unlocked:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Report already paid"
@@ -97,6 +97,7 @@ async def create_payment(
     try:
         # 创建支付订单
         payment_result = await payment_service.create_payment(
+            db=db,
             user_id=current_user.id,
             report_id=request.report_id,
             openid=openid,
@@ -126,12 +127,20 @@ async def get_payment_status(
     """
     查询支付状态
     """
-    # 这里简化处理，实际应查询payments表
+    result = await db.execute(select(Payment).where(Payment.order_no == order_id))
+    payment = result.scalar_one_or_none()
+
+    if not payment or payment.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Payment not found"
+        )
+
     return PaymentStatusResponse(
         order_id=order_id,
-        status="pending",
-        amount=990,
-        paid_at=None
+        status=payment.status,
+        amount=payment.amount,
+        paid_at=payment.paid_at
     )
 
 
@@ -146,13 +155,13 @@ async def payment_callback(
     支付成功后，微信会POST XML数据到此接口
     """
     try:
-        # 处理回调
-        success = await payment_service.handle_callback(xml_data)
-        
-        if success:
-            return {"code": "SUCCESS", "message": "OK"}
-        else:
-            return {"code": "FAIL", "message": "签名验证失败"}
+        # 处理回调（以后端回调为最终支付依据）
+        result = await payment_service.handle_callback(db=db, xml_data=xml_data)
+
+        if result["success"]:
+            return {"code": "SUCCESS", "message": result["message"]}
+
+        return {"code": "FAIL", "message": result["message"]}
             
     except Exception as e:
         print(f"Payment callback error: {e}")
@@ -186,8 +195,9 @@ async def verify_payment(
     
     return {
         "is_paid": report.is_paid,
-        "can_view_full": report.is_paid,
-        "can_use_tts": report.is_paid,
-        "can_ask_question": report.is_paid,
-        "remaining_questions": 2 if report.is_paid else 0
+        "is_unlocked": report.is_unlocked,
+        "can_view_full": report.is_unlocked,
+        "can_use_tts": report.is_unlocked,
+        "can_ask_question": report.is_unlocked,
+        "remaining_questions": 2 if report.is_unlocked else 0
     }

@@ -5,10 +5,11 @@ from typing import Optional
 import json
 import os
 from app.core.database import get_db
+from app.core.config import settings
 from app.models import User, Report, QAHistory, ReportStatus
 from app.models.schemas import (
     WeChatLoginRequest, AuthResponse, UserResponse,
-    ReportUploadResponse, QuestionnaireSubmit, AnalyzeReportResponse, ReportDetailResponse,
+    ReportUploadResponse, QuestionnaireSubmit, AnalyzeReportResponse, ReportDetailResponse, ReportStatusResponse,
     AskQuestionRequest, AskQuestionResponse, QAHistoryResponse
 )
 from app.services import wechat_service, ai_service, file_service
@@ -120,7 +121,7 @@ async def upload_report(
             file_type=file_info["file_type"],
             file_url=file_info["file_url"],
             file_size=file_info["file_size"],
-            status=ReportStatus.PENDING.value
+            status=ReportStatus.UPLOADED.value
         )
         db.add(report)
         await db.flush()
@@ -167,8 +168,15 @@ async def submit_questionnaire(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Report not found"
         )
-    
+
+    if report.status == ReportStatus.ANALYZING.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Report is currently analyzing"
+        )
+
     report.questionnaire_data = request.questionnaire_data
+    report.status = ReportStatus.QUESTIONNAIRE_SUBMITTED.value
     await db.flush()
     
     return {"message": "Questionnaire submitted successfully"}
@@ -196,9 +204,16 @@ async def analyze_report(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Report not found"
         )
-    
+
+    if report.status == ReportStatus.ANALYZING.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Report is already being analyzed"
+        )
+
     # Update status
-    report.status = ReportStatus.PROCESSING.value
+    report.status = ReportStatus.ANALYZING.value
+    report.analysis_error_message = None
     await db.flush()
     
     try:
@@ -226,16 +241,18 @@ async def analyze_report(
         
         # Update report
         report.analysis_result = analysis_text
-        report.status = ReportStatus.COMPLETED.value
+        report.analysis_error_message = None
+        report.status = ReportStatus.ANALYSIS_READY.value
         
         return AnalyzeReportResponse(
             report_id=report_id,
-            status=ReportStatus.COMPLETED,
+            status=ReportStatus.ANALYSIS_READY,
             message="Analysis completed successfully"
         )
         
     except Exception as e:
-        report.status = ReportStatus.FAILED.value
+        report.status = ReportStatus.ANALYSIS_FAILED.value
+        report.analysis_error_message = str(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Analysis failed: {str(e)}"
@@ -268,6 +285,35 @@ async def get_report(
     return ReportDetailResponse.model_validate(report)
 
 
+@router.get("/report/{report_id}/status", response_model=ReportStatusResponse)
+async def get_report_status(
+    report_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get report analysis status for polling."""
+    result = await db.execute(
+        select(Report).where(
+            Report.id == report_id,
+            Report.user_id == current_user.id
+        )
+    )
+    report = result.scalar_one_or_none()
+
+    if not report:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Report not found"
+        )
+
+    return ReportStatusResponse(
+        report_id=report.id,
+        status=ReportStatus(report.status),
+        is_unlocked=report.is_unlocked,
+        error_message=report.analysis_error_message,
+    )
+
+
 # ============= Q&A Routes =============
 
 from app.models.schemas import AskQuestionRequest, QAHistoryResponse, AskQuestionResponse
@@ -283,71 +329,78 @@ async def ask_question(
     """
     Ask follow-up question about the report (max 2 questions per report)
     """
-    # Check question limit
-    check_result = await qa_service.check_question_limit(db, request.report_id)
-    
-    if not check_result["can_ask"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=check_result["message"]
-        )
-    
-    # Get report
+    # 1) Report existence + ownership
     result = await db.execute(
         select(Report).where(
             Report.id == request.report_id,
-            Report.user_id == current_user.id
+            Report.user_id == current_user.id,
         )
     )
     report = result.scalar_one_or_none()
-    
+
     if not report:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Report not found"
+            detail="Report not found or access denied",
         )
-    
+
+    # 2) Unlock check
+    if not report.is_unlocked:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Report is locked. Please complete payment first.",
+        )
+
+    # 3) Analysis readiness check
     if not report.analysis_result:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Please analyze the report first"
+            detail="Please analyze the report first",
         )
-    
+
+    # 4) Strong backend limit check (source of truth: persisted qa_history count)
+    check_result = await qa_service.check_question_limit(db, request.report_id)
+    if not check_result["can_ask"]:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=check_result["message"],
+        )
+
+    history = await qa_service.get_qa_history(db, request.report_id)
+
     try:
-        # Get AI answer using Q&A service
+        # Include report summary + questionnaire + historical QA context
         answer_result = await qa_service.answer_question(
             question=request.question,
             analysis_result=report.analysis_result,
-            questionnaire_data=report.questionnaire_data
+            questionnaire_data=report.questionnaire_data,
+            qa_history=history,
         )
-        
         answer = answer_result["answer"]
-        
-        # Save Q&A history
+
         qa = QAHistory(
             report_id=request.report_id,
             question=request.question,
-            answer=answer
+            answer=answer,
         )
         db.add(qa)
-        
-        # Increment question count
-        await qa_service.increment_question_count(db, request.report_id)
-        
         await db.flush()
         await db.refresh(qa)
-        
+
+        # keep denormalized counter in sync with persisted history
+        await qa_service.sync_question_count(db, report)
+
         return AskQuestionResponse(
             qa_id=qa.id,
             question=request.question,
             answer=answer,
-            message=check_result["message"]
+            message=f"Question accepted. {check_result['remaining'] - 1} question(s) remaining",
         )
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate answer: {str(e)}"
+            detail=f"Failed to generate answer: {str(e)}",
         )
 
 
@@ -384,7 +437,7 @@ async def get_qa_status(
         "report_id": report_id,
         "can_ask": check_result["can_ask"],
         "remaining": check_result["remaining"],
-        "question_count": report.question_count,
+        "question_count": check_result["count"],
         "history": [
             {
                 "id": qa.id,
@@ -459,6 +512,12 @@ async def generate_report_tts(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Please analyze the report first"
+        )
+
+    if not report.is_unlocked:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Please complete payment to unlock this report"
         )
     
     try:
