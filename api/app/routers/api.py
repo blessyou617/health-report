@@ -253,6 +253,7 @@ async def analyze_report(
     except Exception as e:
         report.status = ReportStatus.ANALYSIS_FAILED.value
         report.analysis_error_message = str(e)
+        await db.commit()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Analysis failed: {str(e)}"

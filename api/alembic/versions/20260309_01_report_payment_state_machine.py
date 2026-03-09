@@ -26,6 +26,32 @@ def upgrade() -> None:
     op.execute("UPDATE reports SET status = 'analysis_ready' WHERE status IN ('completed')")
     op.execute("UPDATE reports SET status = 'analysis_failed' WHERE status IN ('failed')")
 
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    payment_columns = {column["name"] for column in inspector.get_columns("payments")}
+
+    # payment: ensure legacy schema is migrated to normalized columns first
+    with op.batch_alter_table("payments") as batch_op:
+        if "order_id" in payment_columns and "order_no" not in payment_columns:
+            batch_op.alter_column("order_id", new_column_name="order_no")
+        if "pay_type" in payment_columns and "provider" not in payment_columns:
+            batch_op.alter_column(
+                "pay_type",
+                new_column_name="provider",
+                existing_type=sa.String(length=32),
+                server_default="wechat",
+                nullable=False,
+            )
+        if "transaction_id" in payment_columns and "provider_txn_id" not in payment_columns:
+            batch_op.alter_column("transaction_id", new_column_name="provider_txn_id")
+
+        if "provider" not in payment_columns and "pay_type" not in payment_columns:
+            batch_op.add_column(sa.Column("provider", sa.String(length=32), nullable=False, server_default="wechat"))
+        if "provider_txn_id" not in payment_columns and "transaction_id" not in payment_columns:
+            batch_op.add_column(sa.Column("provider_txn_id", sa.String(length=64), nullable=True))
+
+    op.execute("UPDATE payments SET provider = 'wechat' WHERE provider IS NULL OR provider = ''")
+
     # payment: normalize legacy status to new statuses
     op.execute("UPDATE payments SET status = 'paid' WHERE status IN ('success')")
     op.execute("UPDATE payments SET status = 'refunded' WHERE status IN ('closed')")
@@ -35,6 +61,22 @@ def downgrade() -> None:
     # payment rollback mapping
     op.execute("UPDATE payments SET status = 'success' WHERE status IN ('paid')")
     op.execute("UPDATE payments SET status = 'closed' WHERE status IN ('refunded')")
+
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    payment_columns = {column["name"] for column in inspector.get_columns("payments")}
+
+    with op.batch_alter_table("payments") as batch_op:
+        if "provider_txn_id" in payment_columns and "transaction_id" not in payment_columns:
+            batch_op.alter_column("provider_txn_id", new_column_name="transaction_id")
+        if "provider" in payment_columns and "pay_type" not in payment_columns:
+            batch_op.alter_column(
+                "provider",
+                new_column_name="pay_type",
+                existing_type=sa.String(length=32),
+            )
+        if "order_no" in payment_columns and "order_id" not in payment_columns:
+            batch_op.alter_column("order_no", new_column_name="order_id")
 
     # report rollback mapping
     op.execute("UPDATE reports SET status = 'pending' WHERE status IN ('uploaded', 'questionnaire_submitted')")

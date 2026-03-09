@@ -1,5 +1,17 @@
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
 
+export function toAbsoluteApiUrl(url: string): string {
+  if (!url) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+
+  const apiOrigin = new URL(API_BASE_URL).origin;
+  if (url.startsWith('/')) {
+    return `${apiOrigin}${url}`;
+  }
+
+  return `${apiOrigin}/${url}`;
+}
+
 export type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   token?: string;
