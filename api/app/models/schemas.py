@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
 from datetime import datetime
-from app.models.models import ReportStatus
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
+from app.models.models import ReportStatus, PaymentStatus
 
 
 # ============= User Schemas =============
@@ -17,7 +19,7 @@ class UserResponse(BaseModel):
     nickname: Optional[str]
     avatar_url: Optional[str]
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -50,6 +52,14 @@ class AnalyzeReportResponse(BaseModel):
     message: str
 
 
+
+class ReportStatusResponse(BaseModel):
+    report_id: int
+    status: ReportStatus
+    is_unlocked: bool
+    error_message: Optional[str] = None
+
+
 class ReportDetailResponse(BaseModel):
     id: int
     user_id: int
@@ -59,10 +69,12 @@ class ReportDetailResponse(BaseModel):
     report_text: Optional[str]
     questionnaire_data: Optional[str]
     analysis_result: Optional[str]
+    analysis_error_message: Optional[str]
     status: ReportStatus
+    is_unlocked: bool
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -79,7 +91,7 @@ class QAHistoryResponse(BaseModel):
     question: str
     answer: str
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -101,3 +113,22 @@ class TTSResponse(BaseModel):
     audio_url: str
     filename: str
     message: str
+
+
+# ============= Payment Schemas =============
+class CreatePaymentRequest(BaseModel):
+    report_id: int
+
+
+class CreatePaymentResponse(BaseModel):
+    order_id: str
+    prepay_id: str
+    pay_params: dict
+    amount: int
+
+
+class PaymentStatusResponse(BaseModel):
+    order_id: str
+    status: PaymentStatus
+    amount: int
+    paid_at: Optional[datetime]

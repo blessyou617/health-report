@@ -47,7 +47,7 @@ export default function QuestionnaireScreen({ navigation }: any) {
         [
           {
             text: '查看报告',
-            onPress: () => navigation.navigate('Report'),
+            onPress: () => navigation.navigate('Report', { reportId: 1 }),
           },
         ]
       );
